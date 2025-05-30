@@ -1,6 +1,7 @@
+# Use an official Python image with OS-level dependencies
 FROM python:3.10-slim
 
-# Install system dependencies required for face_recognition, tesseract, OpenCV, etc.
+# Install OS dependencies
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     poppler-utils \
@@ -13,22 +14,24 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Environment variables
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Set working directory
 WORKDIR /app
 
-# Install Python dependencies
+# Copy dependency file
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Copy project files
 COPY . .
 
-# Expose port
+# Expose the port Flask runs on
 EXPOSE 5000
 
-# Start the app with Gunicorn
+# Run the application with Gunicorn
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000", "--workers", "2"]
