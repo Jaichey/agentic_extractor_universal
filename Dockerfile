@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libglib2.0-0 \
-    libboost-all-dev \
-    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Environment variables
