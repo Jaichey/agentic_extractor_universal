@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any
 class FirebaseService:
     def __init__(self):
         try:
-            cred = credentials.Certificate("serviceAccountKey.json")
+            cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
             firebase_admin.initialize_app(cred)
             self.db = firestore.client()
         except Exception as e:
