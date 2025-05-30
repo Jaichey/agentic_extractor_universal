@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libglib2.0-0 \
+    libboost-all-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
