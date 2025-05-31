@@ -150,4 +150,4 @@ def health_check():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Required for Render
-    app.run(host="0.0.0.0", port=port, debug=True)  # Set debug=False in production
+    app.run(host="0.0.0.0", port=port)  # Set debug=False in production
