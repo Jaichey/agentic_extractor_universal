@@ -21,7 +21,7 @@ class FirebaseService:
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
                 "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_CERT_URL")
             })
-firebase_admin.initialize_app(cred)
+            firebase_admin.initialize_app(cred)
             self.db = firestore.client()
         except Exception as e:
             print(f"Firebase initialization error: {e}")
