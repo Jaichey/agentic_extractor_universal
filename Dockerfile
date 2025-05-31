@@ -1,7 +1,7 @@
-# Use official Python image with slim variant
-FROM python:3.11.9-slim-bullseye
+# Use Python 3.9 with full Debian packages
+FROM python:3.9.18-bookworm
 
-# Install system dependencies
+# Install all required system dependencies
 RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
@@ -12,20 +12,26 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     libxext6 \
     libxrender-dev \
+    libgtk2.0-dev \
+    libgtk-3-dev \
+    libboost-all-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
+# First install dlib with explicit build options
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --upgrade pip && \
-    pip install opencv-python-headless==4.5.5.64 && \
-    pip install -r requirements.txt
+    pip install --no-cache-dir cmake && \
+    pip install --no-cache-dir --verbose --global-option=--verbose \
+    --install-option="--no" --install-option="DLIB_USE_CUDA" \
+    --install-option="--no" --install-option="DLIB_USE_BLAS" \
+    dlib==19.24.2 && \
+    pip install --no-cache-dir opencv-python-headless==4.5.5.64 && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
+# Copy application files
 COPY . .
 
 # Environment variables
