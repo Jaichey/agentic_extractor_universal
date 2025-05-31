@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Install Python dependencies
+# Install Python dependencies with specific versions
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
@@ -26,6 +26,8 @@ COPY . .
 # Environment variables
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_ENV=production
+ENV TF_ENABLE_ONEDNN_OPTS=0  
+# Disables oneDNN warnings
 
 # Expose port
 EXPOSE 5000
