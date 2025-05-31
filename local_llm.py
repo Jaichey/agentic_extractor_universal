@@ -79,7 +79,7 @@ Return structured JSON with fields for:
     }
 
     payload = {
-        "model": "meta-llama/llama-3.3-8b-instruct:free",
+        "model": "deepseek/deepseek-r1-0528-qwen3-8b:free",
         "messages": [
             {"role": "system", "content": "Extract structured personal data from documents."},
             {"role": "user", "content": prompt}

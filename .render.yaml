@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: flask-faceapp
-    env: docker
-    plan: free
-    autoDeploy: true
