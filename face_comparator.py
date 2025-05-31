@@ -1,69 +1,56 @@
 # face_comparator.py
-
-import face_recognition
+from deepface import DeepFace
+import cv2
+import base64
+import numpy as np
 import logging
 
 def compare_faces(extracted_face_path, uploaded_face_path):
     try:
-        # Load images with enhanced detection
-        extracted_image = face_recognition.load_image_file(extracted_face_path)
-        uploaded_image = face_recognition.load_image_file(uploaded_face_path)
-        print(f"Comparing faces in {extracted_face_path} and {uploaded_face_path}")
-        logging.info(f"Comparing faces in {extracted_face_path} and {uploaded_face_path}")
-        
-        # Increase detection parameters
-        extracted_locations = face_recognition.face_locations(
-            extracted_image,
-            number_of_times_to_upsample=2,
-            model="cnn"  # Use CNN model for better accuracy
-        )
-        uploaded_locations = face_recognition.face_locations(
-            uploaded_image,
-            number_of_times_to_upsample=2,
-            model="cnn"
-        )
-        
-        if not extracted_locations:
+        logging.info(f"Comparing faces using DeepFace: {extracted_face_path} vs {uploaded_face_path}")
+
+        # Validate image readability
+        extracted_img = cv2.imread(extracted_face_path)
+        uploaded_img = cv2.imread(uploaded_face_path)
+
+        if extracted_img is None:
             return {
                 "photoMatch": "no face detected in document",
                 "faceSimilarity": None,
-                "debug": "Could not locate face in document image"
+                "debug": "Could not read or decode face from document image"
             }
-            
-        if not uploaded_locations:
+
+        if uploaded_img is None:
             return {
-                "photoMatch": "no face detected in uploaded photo", 
+                "photoMatch": "no face detected in uploaded photo",
                 "faceSimilarity": None,
-                "debug": "Could not locate face in supporting image"
+                "debug": "Could not read or decode face from uploaded image"
             }
-            
-        # Get encodings for the largest face found
-        extracted_encoding = face_recognition.face_encodings(
-            extracted_image, 
-            extracted_locations
-        )[0]
-        
-        uploaded_encoding = face_recognition.face_encodings(
-            uploaded_image,
-            uploaded_locations
-        )[0]
-        
-        # Compare faces with tolerance=0.5 for better accuracy
-        distance = face_recognition.face_distance(
-            [extracted_encoding], 
-            uploaded_encoding
-        )[0]
-        similarity = float(1 - distance)
-        
+
+        # Analyze and compare using DeepFace (default model is 'VGG-Face')
+        result = DeepFace.verify(
+            img1_path=extracted_face_path,
+            img2_path=uploaded_face_path,
+            model_name="VGG-Face",         # Other options: "Facenet", "ArcFace", etc.
+            detector_backend="opencv",     # Other options: "retinaface", "mediapipe"
+            enforce_detection=False        # Prevents crash if face isn't detected
+        )
+
+        verified = result.get("verified", False)
+        distance = result.get("distance", 1.0)
+        similarity = 1 - distance if distance is not None else None
+
         return {
-            "photoMatch": "success" if distance <= 0.5 else "failed",
+            "photoMatch": "success" if verified else "failed",
             "faceSimilarity": similarity,
-            "faceDistance": distance
+            "faceDistance": distance,
+            "debug": result
         }
-        print(f"Face comparison result: {distance} (similarity: {similarity})")
-        
+
     except Exception as e:
+        logging.error(f"DeepFace error: {str(e)}")
         return {
             "photoMatch": "error",
+            "faceSimilarity": None,
             "error": str(e)
         }
