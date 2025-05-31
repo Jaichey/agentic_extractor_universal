@@ -26,15 +26,13 @@ COPY . .
 # Environment variables
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_ENV=production
-ENV TF_ENABLE_ONEDNN_OPTS=0  
-# Disables oneDNN warnings
+ENV TF_ENABLE_ONEDNN_OPTS=0
+ENV TF_CPP_MIN_LOG_LEVEL=2  
+# Reduce TensorFlow logging
 
 # Expose port
-EXPOSE 5000
+EXPOSE 8080  
+# Changed to match your app's port
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
-
-# Run the application
-CMD ["python", "app.py"]
+# Use production WSGI server
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "4", "app:app"]
