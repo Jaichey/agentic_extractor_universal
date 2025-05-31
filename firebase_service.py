@@ -1,11 +1,15 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 from typing import Optional, Dict, Any
+import os
+import json
 
 class FirebaseService:
     def __init__(self):
         try:
-            cred = credentials.Certificate("serviceAccountKey.json")
+            firebase_credentials_json = os.environ["FIREBASE_CREDENTIALS_JSON"]
+            firebase_creds_dict = json.loads(firebase_credentials_json)
+            cred = firebase_credentials_json
             firebase_admin.initialize_app(cred)
             self.db = firestore.client()
         except Exception as e:
