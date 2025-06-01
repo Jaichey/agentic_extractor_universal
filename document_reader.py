@@ -11,7 +11,7 @@ class DocumentProcessor:
             cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
         )
         # Set your local tesseract path if needed
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        #pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
     def extract_text(self, file_path):
         ext = os.path.splitext(file_path)[1].lower()
