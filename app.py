@@ -116,10 +116,10 @@ def upload_and_verify():
             else:
                 face_result["photoMatch"] = "no face detected in document"
 
-        # Prepare response
+        # Prepare response with personal details
         response_data = {
             'results': [{
-                'extracted_data': extracted_data,
+                'extracted_data': extracted_data,  # This now includes personal_details
                 'comparison_result': {
                     'verdict': result['verdict'],
                     'similarity_score': result.get('similarity_score', 0),
@@ -129,7 +129,8 @@ def upload_and_verify():
                 'face_images': face_images,
                 'file_name': file.filename,
                 'document_type': doc_type,
-                'document_number': doc_number
+                'document_number': doc_number,
+                'personal_details': extracted_data.get("personal_details", {})  # Explicitly include
             }]
         }
 
@@ -151,4 +152,4 @@ def health_check():
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    app.run(debug=True, host="0.0.0.0", port=port)
