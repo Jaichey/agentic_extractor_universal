@@ -8,15 +8,22 @@ services:
       pip install -r requirements.txt
     startCommand: |
       gunicorn app:app \
-        --timeout 120 \
-        --workers 4 \
-        --bind 0.0.0.0:$PORT \
-        --preload
+      --bind 0.0.0.0:$PORT \
+      --workers 2 \
+      --timeout 300 \
+      --preload \
+      --worker-class gthread \
+      --threads 2 \
+      --log-level debug \
+      --max-requests 1000 \
+      --max-requests-jitter 50
     envVars:
       - key: FLASK_ENV
         value: production
       - key: PYTHONUNBUFFERED
         value: 1
+      - key: GUNICORN_CMD_ARGS
+        value: "--timeout 300 --preload"
     secretFiles:
       - path: /app/firebase-config.json
         name: FIREBASE_SECRET
