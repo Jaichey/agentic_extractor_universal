@@ -2,8 +2,23 @@ services:
   - type: web
     name: flask-api
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --timeout 120 --workers 2 --bind 0.0.0.0:$PORT
+    pythonVersion: "3.10"
+    buildCommand: |
+      pip install --upgrade pip &&
+      pip install -r requirements.txt
+    startCommand: |
+      gunicorn app:app \
+        --timeout 120 \
+        --workers 4 \
+        --bind 0.0.0.0:$PORT \
+        --preload
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: PYTHONUNBUFFERED
+        value: 1
+    secretFiles:
+      - path: /app/firebase-config.json
+        name: FIREBASE_SECRET
+      - path: /app/.env
+        name: ENV_SECRETS
