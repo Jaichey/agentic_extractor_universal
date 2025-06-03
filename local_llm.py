@@ -74,7 +74,7 @@ Return structured JSON with fields for:
 """
 
     headers = {
-        "Authorization": "Bearer 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",
+        "Authorization": "Bearer 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",
         "Content-Type": "application/json"
     }
 
