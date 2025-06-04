@@ -7,6 +7,8 @@ from firebase_service import FirebaseService
 from face_comparator import compare_faces
 from flask_cors import CORS
 import logging
+from doc_validator import DocumentValidator 
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -51,6 +53,7 @@ def image_to_base64(image_path):
 @app.route('/upload-and-verify', methods=['POST'])
 def upload_and_verify():
     logger.info("Received upload request")
+    
 
     # Validate request
     if 'file' not in request.files:
@@ -61,6 +64,8 @@ def upload_and_verify():
     user_id = request.form.get('uid')
     doc_type = request.form.get('docType')
     doc_number = request.form.get('docNumber')
+    logger.info(f"Received docType: {doc_type}")  # Confirm receipt
+    
     
     if not user_id:
         return jsonify({'error': 'User ID (uid) is required'}), 400
@@ -84,14 +89,105 @@ def upload_and_verify():
         extracted_data = extraction_agent.process_file(file_path, output_base)
         if not extracted_data:
             return jsonify({'error': 'Document processing failed'}), 400
+        
+        def flatten_dict(d, parent_key='', sep='_'):
+            items = {}
+            for k, v in d.items():
+                new_key = f"{parent_key}{sep}{k}" if parent_key else k
+                if isinstance(v, dict) and v is not None:
+                    items.update(flatten_dict(v, new_key, sep=sep))
+                else:
+                    items[new_key] = v
+            return items
 
-        # Compare document data
-        comparator = DocumentComparator(profile_data, extracted_data["personal_details"])
+        KEY_MAPPING = {
+            "Personal Information_Full Name": "name",
+            "Personal Information_Father's Name": "father_name",
+            "Personal Information_Mother's Name": "mother_name",
+            "Personal Information_Date of Birth": "date_of_birth",
+            "Contact Information_Phone Number(s)": "contact",
+            "Contact Information_Email Address(es)": "email",
+            "Contact Information_Full Address": "full_address",
+            "Document Identifiers_Aadhaar Number": "aadhaar_number",
+            "Document Identifiers_PAN Number": "pan_number",
+            "personal information_gender": "gender",
+            "personal information_nationality": "nationality",
+            "personal information_religion": "religion",
+            "personal information_caste / Category": "category",
+            "personal information_marital Status": "marital_status",
+            "personal information_full Name": "name",
+            "personal information_identification Marks": "id_marks",
+            "personal information_father's Name": "father_name",
+            "personal information_mother's Name": "mother_name",
+            "personal information_date of Birth": "date_of_birth",
+            "contact information_phone Number(s)": "contact",
+            "contact information_email Address(es)": "email",
+            "contact information_full Address": "full_address",
+            "document identifiers_aadhaar Number": "aadhaar_number",
+            "document identifiers_pan Number": "pan_number",
+            "personal information_gender": "gender"
+        }
+
+        from datetime import datetime
+
+        def normalize_personal_details(flat_details, key_mapping):
+            normalized = {}
+            for original_key, value in flat_details.items():
+                mapped_key = key_mapping.get(original_key)
+                if mapped_key:
+                    # Handle lists (like phone numbers)
+                    if isinstance(value, list):
+                        if len(value) > 0:
+                            normalized[mapped_key] = value[0]  # take first phone/email
+                        else:
+                            normalized[mapped_key] = None
+                    else:
+                        normalized[mapped_key] = value
+
+            # Normalize date_of_birth format from DD/MM/YYYY to YYYY-MM-DD if present
+            dob = normalized.get("date_of_birth")
+            if dob:
+                try:
+                    # parse date with slashes and convert to ISO
+                    dt = datetime.strptime(dob, "%d/%m/%Y")
+                    normalized["date_of_birth"] = dt.strftime("%Y-%m-%d")
+                except Exception:
+                    # leave as is if parsing fails
+                    pass
+
+            return normalized
+
+        # Usage inside your endpoint:
+        raw_details = extracted_data.get("personal_details", {})
+        flat_details = flatten_dict(raw_details)
+        normalized_details = normalize_personal_details(flat_details, KEY_MAPPING)
+
+        
+        logger.info("=== Profile Data ===")
+        logger.info(profile_data)
+
+        logger.info("=== Extracted Raw Details ===")
+        logger.info(extracted_data.get("personal_details", {}))
+
+        logger.info("=== Normalized Document Data ===")
+        logger.info(normalized_details)
+        
+        logger.info(f"Profile keys: {list(profile_data.keys())}")
+        logger.info(f"Document keys: {list(extracted_data.get('personal_details', {}).keys())}")
+
+
+
+        comparator = DocumentComparator(profile_data, normalized_details, doc_type)
         result = comparator.compare_fields()
 
         # Initialize face comparison data
         face_result = {"photoMatch": "no face detected", "faceSimilarity": None}
         face_images = {"document_face": None, "uploaded_face": None}
+        
+        validation = None
+        if doc_type=='aadhaar':
+            validation = DocumentValidator.validate_aadhaar(doc_number)
+            print(f"Aadhaar Validation: {validation}")
 
         # Handle face comparison if required
         require_face_comparison = request.form.get('requireFaceComparison', 'false').lower() == 'true'
@@ -130,7 +226,11 @@ def upload_and_verify():
                 'file_name': file.filename,
                 'document_type': doc_type,
                 'document_number': doc_number,
-                'personal_details': extracted_data.get("personal_details", {})  # Explicitly include
+                'personal_details': extracted_data.get("personal_details", {}), # Explicitly include
+                 'validation':{
+                    'status': validation[0],
+                    'message': validation[1] if validation else "No validation performed"
+                 }
             }]
         }
 
