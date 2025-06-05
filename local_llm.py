@@ -1,7 +1,10 @@
 import requests
 import json
 import re
+import os
+from tenacity import retry, stop_after_attempt, wait_exponential
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def run_local_llm(doc_text):
     if not doc_text.strip():
         return {"error": "No text found in document"}
@@ -72,9 +75,11 @@ Return structured JSON with fields for:
 - Document Identifiers
 - Employment/Income Details
 """
-
+    api_key = os.getenv("OPENROUTER_API_KEY").strip()
+    if not api_key:
+        return {"error": "API key not found. Set the OPENROUTER_API_KEY environment variable."}
     headers = {
-        "Authorization": "Bearer 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",
+        "Authorization": "Bearer {api_key}",
         "Content-Type": "application/json"
     }
 
@@ -92,11 +97,12 @@ Return structured JSON with fields for:
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
             json=payload,
-            timeout=30
+            timeout=60
         )
 
         if response.status_code != 200:
-            return {"error": f"API Error {response.status_code}"}
+            return {"error": f"API Error {response.status_code}",
+                    "message": response.text[:500]}
 
         raw_content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
 
