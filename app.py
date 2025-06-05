@@ -177,6 +177,8 @@ def upload_and_verify():
 
         face_result = {"photoMatch": "no face detected", "faceSimilarity": None}
         face_images = {"document_face": None, "uploaded_face": None}
+        
+        
 
         validation = None
         if doc_type == 'aadhaar':
@@ -246,7 +248,7 @@ def upload_and_verify():
         }
 
         logger.info(f"Verification completed for user {user_id}")
-        return jsonify(response_data)
+        return jsonify(convert_ndarray_to_list(response_data))
 
     except Exception as e:
         logger.error(f"Error during verification: {str(e)}", exc_info=True)
