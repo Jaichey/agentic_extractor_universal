@@ -3,6 +3,8 @@ import json
 import re
 import os
 from tenacity import retry, stop_after_attempt, wait_exponential
+from dotenv import load_dotenv
+load_dotenv()
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def run_local_llm(doc_text):
@@ -75,11 +77,12 @@ Return structured JSON with fields for:
 - Document Identifiers
 - Employment/Income Details
 """
-    api_key = os.getenv("OPENROUTER_API_KEY").strip()
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         return {"error": "API key not found. Set the OPENROUTER_API_KEY environment variable."}
+    api_key=api_key.strip()
     headers = {
-        "Authorization": "Bearer {api_key}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
 
