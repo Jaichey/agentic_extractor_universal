@@ -52,6 +52,16 @@ def bytes_to_base64_in_dict(d):
         return base64.b64encode(d).decode('utf-8')
     else:
         return d
+    
+def convert_ndarray_to_list(obj):
+    if isinstance(obj, dict):
+        return {k: convert_ndarray_to_list(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_ndarray_to_list(i) for i in obj]
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
 
 
 @app.route('/upload-and-verify', methods=['POST'])
@@ -205,11 +215,10 @@ def upload_and_verify():
                 np_extracted_face = cv2.imdecode(np.frombuffer(extracted_face_bytes, np.uint8), cv2.IMREAD_COLOR)
 
                 if np_uploaded_face is not None and np_extracted_face is not None:
-                    # Assuming compare_faces is modified to accept np.ndarray images or base64.
-                    # If your current compare_faces accepts paths only, you need to update it to accept np.ndarray.
-                    # Here, let's say it accepts numpy arrays:
                     face_result = compare_faces(np_extracted_face, np_uploaded_face)
+                    face_result = convert_ndarray_to_list(face_result)  # Convert ndarrays to lists
                     logger.info(f"Face comparison result: {face_result}")
+                    
                 else:
                     face_result["photoMatch"] = "invalid face images"
             else:
