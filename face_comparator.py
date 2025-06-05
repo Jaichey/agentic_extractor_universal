@@ -1,12 +1,35 @@
-# face_comparator.py
 import cv2
 import numpy as np
 import logging
 
-def compare_faces(extracted_face_path, uploaded_face_path):
+def load_image(img_input):
+    """
+    Helper: load image from:
+    - file path (str),
+    - bytes (bytes),
+    - numpy array (return as is)
+    Returns grayscale numpy array or None.
+    """
+    if isinstance(img_input, str):
+        img = cv2.imread(img_input, cv2.IMREAD_GRAYSCALE)
+    elif isinstance(img_input, bytes):
+        nparr = np.frombuffer(img_input, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+    elif isinstance(img_input, np.ndarray):
+        if len(img_input.shape) == 3:
+            img = cv2.cvtColor(img_input, cv2.COLOR_BGR2GRAY)
+        else:
+            img = img_input
+    else:
+        logging.error(f"Unsupported input type for image: {type(img_input)}")
+        return None
+    return img
+
+
+def compare_faces(extracted_face_input, uploaded_face_input):
     try:
-        img1 = cv2.imread(extracted_face_path, cv2.IMREAD_GRAYSCALE)
-        img2 = cv2.imread(uploaded_face_path, cv2.IMREAD_GRAYSCALE)
+        img1 = load_image(extracted_face_input)
+        img2 = load_image(uploaded_face_input)
 
         if img1 is None or img2 is None:
             logging.error("One or both images could not be loaded.")
@@ -34,9 +57,6 @@ def compare_faces(extracted_face_path, uploaded_face_path):
 
         matches = sorted(matches, key=lambda x: x.distance)
         top_matches = matches[:50]
-
-        if not top_matches:
-            return {"photoMatch": "failed", "faceSimilarity": 0.0, "method": "ORB_feature_matching"}
 
         similarity = sum(m.distance for m in top_matches) / len(top_matches)
         normalized_similarity = max(0, 1 - (similarity / 100))

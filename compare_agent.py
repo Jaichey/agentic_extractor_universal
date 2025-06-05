@@ -36,12 +36,33 @@ class DocumentComparator:
                 "college": ["College", "College Name", "Institution"],
                 "course": ["Course", "Degree"],
                 "year": ["Year", "Academic Year"]
+            },
+            'driving_license': {
+                "name": ["Name", "Full Name", "Holder's Name"],
+                'father_name': ['father_name', 'fatherName', 'father', 'Father', "Father's Name", "F/O", "S/O"],
+                "date_of_birth": ["DOB", "Date of Birth"],
+            },
+            "caste_certificate": {
+                "name": ["Name", "Full Name", "Holder's Name"],
+                'father_name': ['father_name', 'fatherName', 'father', 'Father', "Father's Name", "F/O", "S/O"],
+                "caste": ["Caste", "Caste Category", "Caste Name"],
+                "date_of_birth": ["DOB", "Date of Birth", "Year of Birth"],
+            },
+            "voter_id": {
+                "name": ["Name", "Full Name", "Holder's Name"],
+                'father_name': ['father_name', 'fatherName', 'father', 'Father', "Father's Name", "F/O", "S/O"],
+                "date_of_birth": ["DOB", "Date of Birth"],
+            },
+            "income_certificate": {
+                "name": ["Name", "Full Name", "Holder's Name"],
+                'father_name': ['father_name', 'fatherName', 'father', 'Father', "Father's Name", "F/O", "S/O"],
+                "date_of_birth": ["DOB", "Date of Birth"],
             }
-            #We can add more document types as needed
+            
         }
         
         # Default field mapping (used when no specific document type is specified)
-        self.default_field_map = {
+        self.default_field_map = { 
             "name": ["Name", "Full Name", "Holder's Name", "Student Name"],
             'father_name': ['father_name', 'fatherName', 'father', 'Father', "Father's Name", "F/O", "S/O"],
             "motherName": ["Mother", "Mother Name", "Mother's Name", "D/O"],

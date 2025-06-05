@@ -45,6 +45,36 @@ class DocumentValidator:
         
         # Additional format checks for specific states
         return 'valid', "Valid Driving License"
+    @staticmethod
+    def validate_caste_certificate(number):
+        """Validate Caste Certificate"""
+        if not number or len(number) < 10:
+            return 'invalid', "Too short (min 10 chars)"
+        if not re.match(r'^CND\d{13}$', number.upper()):
+            return 'invalid', "Format: CND1234567890123"
+        
+        # Additional format checks for specific states
+        return 'valid', "Valid Caste Certificate"
+    @staticmethod
+    def validate_voter_id(number):
+        """Validate Voter ID"""
+        if not number or len(number) < 10:
+            return 'invalid', "Too short (min 10 chars)"
+        if not re.match(r'^[A-Z]{3}[0-9]{7}$', number.upper()):
+            return 'invalid', "Format: ABC1234567"
+        
+        # Additional format checks for specific states
+        return 'valid', "Valid Voter ID"
+    @staticmethod
+    def validate_income_certificate(number):
+        """Validate Income Certificate"""
+        if not number or len(number) < 10:
+            return 'invalid', "Too short (min 10 chars)"
+        if not re.match(r'^IC\d{12}$', number.upper()):
+            return 'invalid', "Format: IC123456789012"
+        
+        # Additional format checks for specific states
+        return 'valid', "Valid Income Certificate"
 
     # Verhoeff Algorithm Implementation for Aadhaar
     @staticmethod
