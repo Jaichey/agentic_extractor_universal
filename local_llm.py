@@ -87,7 +87,7 @@ Return structured JSON with fields for:
     }
 
     payload = {
-        "model": "deepseek/deepseek-r1-0528-qwen3-8b:free",
+        "model": "tngtech/deepseek-r1t2-chimera:free",
         "messages": [
             {"role": "system", "content": "Extract structured personal data from documents."},
             {"role": "user", "content": prompt}
