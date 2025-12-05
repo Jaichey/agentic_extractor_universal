@@ -87,7 +87,7 @@ Return structured JSON with fields for:
     }
 
     payload = {
-        "model": "tngtech/deepseek-r1t2-chimera:free",
+        "model": "amazon/nova-2-lite-v1:free",
         "messages": [
             {"role": "system", "content": "Extract structured personal data from documents."},
             {"role": "user", "content": prompt}
